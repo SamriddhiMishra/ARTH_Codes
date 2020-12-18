@@ -1,0 +1,52 @@
+- hosts: all
+  tasks:
+  - file:
+      state: directory
+      path: "/dvd"
+  - mount:
+      src: "/dev/cdrom"
+      path: "/dvd"
+      fstype: "iso9660"
+      state: mounted
+  - yum_repository:
+      baseurl: "/dvd/AppStream"
+      name: "mydvd1"
+      description: "This is dvd1ffff"
+      gpgcheck: no
+  - yum_repository:
+      name: "mydvd2"
+      description: "This is dvd1sss"
+      baseurl: "/dvd/BaseOS"
+      gpgcheck: no
+  - yum_repository:
+      baseurl: "https://download.docker.com/linux/centos/7/x86_64/stable/"
+      name: "docker-yum"
+      description: "Docker Repo"
+      state: present
+      gpgcheck: no
+  - package:
+      name: "python3"
+      state: present 
+  - pip:
+      name: "docker-py"
+  - command: "yum install docker-ce --nobest -y"
+    ignore_errors: yes
+  - service:
+      name: "docker"
+      state: started
+      enabled: yes
+  - docker_image:
+      name: "httpd"
+      source: pull
+  - file:
+      path: "/webpages"
+      state: directory
+  - copy:
+      content: "My webpage!!!" 
+      dest: "/webpages/index.html"
+  - docker_container:
+      name: "myos"
+      image: "httpd"
+      exposed_ports: "80"
+      ports: "8989:80"
+      volumes: "/webpages:/usr/local/apache2/htdocs/"

@@ -1,0 +1,41 @@
+- hosts: all
+  tasks:
+    - file:
+        state: directory
+        path: "/dvd"
+    - mount:
+        src: "/dev/cdrom"
+        path: "/dvd"
+        fstype: "iso9660"
+        state: mounted
+    - yum_repository:
+        baseurl: "/dvd/AppStream"
+        name: "mydvd1"
+        description: "This is dvd1ffff"
+        gpgcheck: no
+    - yum_repository:
+        name: "mydvd2"
+        description: "This is dvd1sss"
+        baseurl: "/dvd/BaseOS"
+        gpgcheck: no
+    - package:
+        name: "httpd"
+        state: present
+    - file:
+        state: directory
+        path: "/var/www/lw"
+    - copy:
+        src: "lw.conf"
+        dest: "/etc/httpd/conf.d/lw.conf"
+    - copy:
+        content: "This is my web\n"
+        dest: "/var/www/lw/index.html"
+    - service:
+        name: "httpd"
+        enabled: yes
+        state: restarted
+    - firewalld:
+        port: "8080/tcp"
+        state: enabled
+        permanent: yes
+        immediate: yes

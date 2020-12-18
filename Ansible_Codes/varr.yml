@@ -1,0 +1,7 @@
+- hosts: all
+  vars_files:
+  - "RedHat-7.yml"
+  - "RedHat-8.yml"
+  tasks:
+  - package:
+      name: "{{p}}"

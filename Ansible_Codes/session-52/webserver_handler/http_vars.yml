@@ -1,0 +1,3 @@
+dvd_dir: "/dvd"
+doc_root: "/var/www/lw"
+port: "8080"

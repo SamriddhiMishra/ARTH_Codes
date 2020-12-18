@@ -1,0 +1,22 @@
+- hosts: localhost
+  tasks:
+  - package:
+      name: "python3"
+  - pip:
+      name: "boto3"
+  - name: "Updating SG inbound rule to allow traffic"
+    ec2_group:
+      name: "launch-wizard-2"
+      group_id: "sg-0331e7b3d81475496"
+      description: "EC2 group"
+      vpc_id: "vpc-a3cb08de"
+      region: "us-east-1"
+      aws_secret_key: "u177DwpM2q7hCJhIz+HwOk6Q/KLTZiAeRkOb1HP8"
+      aws_access_key: "AKIAQWRASTHERF22KZMQ"
+      rules:
+      - proto: tcp
+        ports:
+        - 80
+        - 81
+        cidr_ip: 0.0.0.0/0
+        rule_desc: "allow all on port 80"
