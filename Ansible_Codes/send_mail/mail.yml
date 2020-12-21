@@ -1,0 +1,13 @@
+- hosts: localhost
+  vars_files:
+  - secret2.yml
+  tasks:
+  - name: Sending email using smtp server
+    mail:
+      host: smtp.gmail.com
+      port: 465
+      username: "{{ u }}"
+      password: "{{ p }}"
+      to: "mishsam07@gmail.com"
+      subject: "ansibleeeee"
+      body: "Hi"
