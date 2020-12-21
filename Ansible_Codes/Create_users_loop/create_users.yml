@@ -1,0 +1,16 @@
+- hosts: localhost
+  vars:
+  - userdb:
+      - name: "a"
+        p: "1"
+        g: "jack5"
+      - name: "b"
+        p: "2"   
+        g: "jack6"
+  tasks:
+  - user:
+      name: "{{item.name}}"
+      password: "{{item.p | password_hash('sha512')}}"
+      state: present
+      groups: "{{item.g}}"
+    loop: "{{userdb}}"
