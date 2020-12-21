@@ -1,8 +1,0 @@
-- hosts: all
-  vars:
-  - x: "Hi"
-  - y: "Hello"
-  vars_prompt:
-  - name: dvd_dir
-    private: no
-    prompt: "Enter the directory -"
