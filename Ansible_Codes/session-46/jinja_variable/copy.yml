@@ -1,9 +1,0 @@
-- hosts: all
-  vars:
-  - x:
-      - "vim"
-      - "sas"
-  tasks:
-    - template:
-       src: "a.txt"
-       dest: "/root/a.txt"
