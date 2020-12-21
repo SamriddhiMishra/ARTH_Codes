@@ -1,7 +1,0 @@
-- hosts: all
-  tasks:
-  - package:
-      name: "httpdee"
-    ignore_errors: yes
-  - debug:
-      msg: "test"
