@@ -1,0 +1,22 @@
+Step 1) Create Nacl
+aws ec2 create-network-acl --vpc-id [VPC_ID] --tag-specifications "ResourceType = network-acl , Tags = [{Key="Name",Value="[NACL_Name]"}]
+aws ec2 create-network-acl --vpc-id vpc-0d9e9b04f1e977b41 --tag-specifications "ResourceType = network-acl , Tags = [{Key="Name",Value="mynacl"}]
+
+Step 2) Describe NACL to find its association ID
+aws ec2 describe-network-acls  --network-acl-ids [NACL_ID]
+aws ec2 describe-network-acls  --network-acl-ids acl-09bd5c3eb612b8324
+
+Step 3) Copy the association ID
+aclassoc-1ccfbd42
+
+Step 4) Attach NACL to a subnet
+aws ec2 replace-network-acl-association --association-id [Association_ID] --network-acl-id [NACL_ID]
+aws ec2 replace-network-acl-association --association-id aclassoc-1ccfbd42 --network-acl-id acl-013f423665932feb0
+
+Step 5) Create Inbound Rules
+aws ec2 create-network-acl-entry --ingress --network-acl-id [NACL_ID] --rule-number [Rule_No] --protocol [Protocol/-1 for all] --rule-action ["allow/deny"]
+aws ec2 create-network-acl-entry --ingress --network-acl-id acl-013f423665932feb0 --cidr-block 0.0.0.0/0 --rule-number 1 --protocol -1 --rule-action allow
+
+Step 6) Create Outbound Rules
+aws ec2 create-network-acl-entry --engress --network-acl-id [NACL_ID] --rule-number [Rule_No] --protocol [Protocol/-1 for all] --rule-action ["allow/deny"]
+aws ec2 create-network-acl-entry --egress --network-acl-id acl-013f423665932feb0 --cidr-block 0.0.0.0/0 --rule-number 1 --protocol -1 --rule-action allow

@@ -1,0 +1,15 @@
+Step 1) Create NAT Gateway
+aws ec2 create-nat-gateway --subnet-id [Private_Subnet_ID] --allocation-id [AllocateIP_Address] --tag-specifications "ResourceType = natgateway , Tags = [{Key="Name",Value="[NATName]"}]
+aws ec2 create-nat-gateway --subnet-id subnet-0ba7ecab949c94aef  --allocation-id eipalloc-37fc1a52 --tag-specifications "ResourceType = natgateway , Tags = [{Key="Name",Value="mynat"}]
+
+Step 2) Create New Route table
+aws ec2 create-route-table --vpc-id [VPC_Id] --tag-specifications "ResourceType = route-table , Tags = [{Key="Name",Value="[Route_Table_Name]"}]"
+aws ec2 create-route-table --vpc-id vpc-0d9e9b04f1e977b41 --tag-specifications "ResourceType = route-table , Tags = [{Key="Name",Value="sub2route"}]"
+
+Step 3) Create Route
+aws ec2 create-route --route-table-id [Route_Table_ID] --destination-cidr-block [Dest_CIDR] --gateway-id [Nat_Gateway_ID]
+aws ec2 create-route --route-table-id rtb-09b29d475ad21bbff --destination-cidr-block 0.0.0.0/0 --gateway-id igw-0299a9778f2b4e2d1
+
+Step 4) Attach Route table to public subnet - sub1
+aws ec2 associate-route-table --route-table-id [Route_Table_ID] --subnet-id [Private_Subnet_id]
+aws ec2 associate-route-table --route-table-id rtb-09b29d475ad21bbff --subnet-id subnet-073eaa5619ac662b8

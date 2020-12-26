@@ -1,0 +1,7 @@
+Step - Modify Auto-Assign-IP for public subnet on instance launch
+aws ec2 modify-subnet-attribute --map-public-ip-on-launch --subnet-id [Public_Subnet_ID]
+aws ec2 modify-subnet-attribute --map-public-ip-on-launch --subnet-id subnet-073eaa5619ac662b8
+
+Step - Edit VPC setting to auto give DNS hostname to public subnet's Instance Launch
+aws ec2 modify-vpc-attribute --enable-dns-hostnames --vpc-id [VPC_ID]
+aws ec2 modify-vpc-attribute --enable-dns-hostnames --vpc-id vpc-0d9e9b04f1e977b41
