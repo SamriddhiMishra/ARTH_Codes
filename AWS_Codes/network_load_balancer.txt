@@ -1,0 +1,37 @@
+		 ############### Launch Network Load Balancers ################
+
+Step 1) Launch Instance-1
+aws ec2 run-instances --image-id [AMI_ImageID] --instance-type t2.micro --key-name [KeyName] --security-group-ids [GroupID] --subnet-id [SubnetID] --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="[InstanceName]"}]"
+aws ec2 run-instances --image-id ami-0898b2b34d7235501 --instance-type t2.micro --key-name arthos --security-group-ids sg-0331e7b3d81475496 --subnet-id subnet-35ee5314 --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="chatos1"}]"
+
+Step 2) Launch Instance-2
+aws ec2 run-instances --image-id [AMI_ImageID] --instance-type t2.micro --key-name [KeyName] --security-group-ids [GroupID] --subnet-id [SubnetID] --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="[InstanceName]"}]"
+aws ec2 run-instances --image-id ami-0898b2b34d7235501 --instance-type t2.micro --key-name arthos --security-group-ids sg-0331e7b3d81475496 --subnet-id subnet-35ee5314 --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="searchos1"}]"
+
+## For Network Load Balancer use elbv2 ##
+Step 3) Create Load Balancer
+aws elbv2 create-load-balancer --name [LoadBalancerName] --type network --subnet-mappings SubnetId=[subnetID],AllocationId=[Elastic_IP_AllocationID]
+aws elbv2 create-load-balancer --name nlb --type network --type network --subnet-mappings SubnetId=subnet-35ee5314,AllocationId=eipalloc-00b1a2a96446be2a7
+
+Step 4) Create Target Group- chat
+aws elbv2 create-target-group --name [TargetGroupName] --protocol TCP --port [TargetPort] --vpc-id [VPC_ID] --health-check-path [IndexPagePath]
+aws elbv2 create-target-group --name chat --protocol TCP --port 80 --vpc-id vpc-a3cb08de
+
+Step 5) Create Target Group- search
+aws elbv2 create-target-group --name [TargetGroupName] --protocol TCP --port [TargetPort] --vpc-id [VPC_ID] --health-check-path [IndexPagePath]
+aws elbv2 create-target-group --name search --protocol TCP --port 80 --vpc-id vpc-a3cb08de
+
+Step 6) Register targets to Group chat -> chatos1
+aws elbv2 register-targets --target-group-arn [targetgroup-arn] --targets Id=[TargetID]
+aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:targetgroup/chat/282a044c09bc2487 --targets Id=i-069e34c7d9997e8f5
+
+Step 7) Register targets to Group chat -> searchos1
+aws elbv2 register-targets --target-group-arn [targetgroup-arn] --targets Id=[TargetID]
+aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:targetgroup/chat/282a044c09bc2487 --targets Id=i-0f424fb8b453b8704
+
+## Default Listener forwarding to Target group ##
+Step 8) Create Listener for Load Balancer
+aws elbv2 create-listener --load-balancer-arn loadbalancer-arn --protocol TCP --port [LB_Port] --default-actions Type=forward,TargetGroupArn=[targetgroup-arn]
+aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:loadbalancer/net/nlb/97fbe60df258202e --protocol TCP --port 8080 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:048386709961:targetgroup/chat/282a044c09bc2487
+
+Here we can use different port numbers to forward to different target groups

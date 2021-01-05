@@ -1,0 +1,43 @@
+######## Enable Cross-zone Load Balancing ########
+
+Classic Load Balancer
+---------------------
+aws elb modify-load-balancer-attributes --load-balancer-name [Name] --load-balancer-attributes  CrossZoneLoadBalancing={Enabled=[boolean]}
+aws elb modify-load-balancer-attributes --load-balancer-name clb --load-balancer-attributes  CrossZoneLoadBalancing={Enabled=true}
+
+Network Load Balancer (Not available in Application Load Balancer)
+---------------------
+aws elbv2 modify-load-balancer-attributes --load-balancer-arn [LB_ARN] --attributes Key=load_balancing.cross_zone.enabled,Value=[boolean]
+aws elbv2 modify-load-balancer-attributes --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:loadbalancer/net/nlb/97fbe60df258202e --attributes Key=load_balancing.cross_zone.enabled,Value=true
+
+
+######## Enable Stickiness with cookies (Only Classic Load Balancers)#########
+
+Step 1)Find the policy name
+aws elb describe-load-balancer-policies --load-balancer-name [Name]
+aws elb describe-load-balancer-policies --load-balancer-name clb
+
+Step 2) Enable stickiness 
+aws elb create-lb-cookie-stickiness-policy --load-balancer-name clb --policy-name [Policy_Name] --cookie-expiration-period [Time]
+aws elb create-lb-cookie-stickiness-policy --load-balancer-name [Name] --policy-name 8080forwardingto80 --cookie-expiration-period 20
+
+
+######## Connection Draining #########
+
+
+Classic Load Balancer(Not available in Application Load Balancer and Network Load Balancer)
+---------------------
+aws elb modify-load-balancer-attributes --load-balancer-name [Name] --load-balancer-attributes ConnectionDraining={Enabled=[boolean],Timeout=[Time]}
+aws elb modify-load-balancer-attributes --load-balancer-name clb --load-balancer-attributes ConnectionDraining={Enabled=true,Timeout=70}
+
+######## Enable access logs(Make sure to give S3Bucket permissions) ###########
+
+Classic Load Balancer
+---------------------
+aws elb modify-load-balancer-attributes --load-balancer-name [LB_Name] --load-balancer-attributes AccessLog={Enabled=[boolean],S3BucketName=[string]}
+aws elb modify-load-balancer-attributes --load-balancer-name clb --load-balancer-attributes AccessLog={Enabled=true,S3BucketName=lwsss}
+
+Network and Application Load Balancer
+-------------------------------------
+aws elbv2 modify-load-balancer-attributes --load-balancer-arn [LB_ARN] --attributes Key=access_logs.s3.enabled,Value=[boolean] Key=access_logs.s3.bucket,Value=[string]
+aws elbv2 modify-load-balancer-attributes --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:loadbalancer/net/nlb/97fbe60df258202e --attributes Key=access_logs.s3.enabled,Value=true Key=access_logs.s3.bucket,Value=lwsss
