@@ -10,7 +10,7 @@ aws ec2 run-instances --image-id ami-0898b2b34d7235501 --instance-type t2.micro 
 
 ## For Application Load Balancer use elbv2 ##
 Step 3) Create Load Balancer
-aws elbv2 create-load-balancer --load-balancer-name [LoadBalancerName] --subnets [Subnet-ID] --security-groups [SG-Id]
+aws elbv2 create-load-balancer --name [LoadBalancerName] --subnets [Subnet-ID] --security-groups [SG-Id]
 aws elbv2 create-load-balancer --name alb --subnets subnet-35ee5314 subnet-bf0c4af2 --security-groups sg-02ad2a09ccef798c1
 
 Step 4) Create Target Group- chat
