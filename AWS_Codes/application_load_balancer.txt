@@ -1,0 +1,44 @@
+		 ############### Launch Application Load Balancers ################
+
+Step 1) Launch Instance-1
+aws ec2 run-instances --image-id [AMI_ImageID] --instance-type t2.micro --key-name [KeyName] --security-group-ids [GroupID] --subnet-id [SubnetID] --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="[InstanceName]"}]"
+aws ec2 run-instances --image-id ami-0898b2b34d7235501 --instance-type t2.micro --key-name arthos --security-group-ids sg-0331e7b3d81475496 --subnet-id subnet-35ee5314 --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="chatos1"}]"
+
+Step 2) Launch Instance-2
+aws ec2 run-instances --image-id [AMI_ImageID] --instance-type t2.micro --key-name [KeyName] --security-group-ids [GroupID] --subnet-id [SubnetID] --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="[InstanceName]"}]"
+aws ec2 run-instances --image-id ami-0898b2b34d7235501 --instance-type t2.micro --key-name arthos --security-group-ids sg-0331e7b3d81475496 --subnet-id subnet-35ee5314 --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="searchos1"}]"
+
+## For Application Load Balancer use elbv2 ##
+Step 3) Create Load Balancer
+aws elbv2 create-load-balancer --load-balancer-name [LoadBalancerName] --subnets [Subnet-ID] --security-groups [SG-Id]
+aws elbv2 create-load-balancer --name alb --subnets subnet-35ee5314 subnet-bf0c4af2 --security-groups sg-02ad2a09ccef798c1
+
+Step 4) Create Target Group- chat
+aws elbv2 create-target-group --name [TargetGroupName] --protocol [TargetProtocol] --port [TargetPort] --vpc-id [VPC_ID] --health-check-path [IndexPagePath]
+aws elbv2 create-target-group --name chat --protocol HTTP --port 80 --vpc-id vpc-a3cb08de --health-check-path /chat/index.php
+
+Step 5) Create Target Group- search
+aws elbv2 create-target-group --name [TargetGroupName] --protocol [TargetProtocol] --port [TargetPort] --vpc-id [VPC_ID] --health-check-path [IndexPagePath]
+aws elbv2 create-target-group --name search --protocol HTTP --port 80 --vpc-id vpc-a3cb08de --health-check-path /search/index.php
+
+Step 6) Register targets to Group chat -> chatos1
+aws elbv2 register-targets --target-group-arn [targetgroup-arn] --targets Id=i-0abcdef1234567890 Id=i-1234567890abcdef0
+aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:targetgroup/chat/af45c63549d13aa6 --targets Id=i-004ed45b1ef399bd0
+
+Step 7) Register targets to Group search -> searchos1
+aws elbv2 register-targets --target-group-arn [targetgroup-arn] --targets Id=i-0abcdef1234567890 Id=i-1234567890abcdef0
+aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:targetgroup/search/fdff75e22785697d --targets Id=i-02fc3ea171ad658ae
+
+## Default Listener forwarding to Target group ##
+Step 8) Create Listener for Load Balancer
+aws elbv2 create-listener --load-balancer-arn [LB-arn] --protocol [HTTP] --port [Port] --default-actions Type=forward,TargetGroupArn=[TargetGroupARN]
+aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:loadbalancer/app/alb/0c19faabc600fcb3 --protocol HTTP --port 8080 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:048386709961:targetgroup/chat/af45c63549d13aa6
+
+Step 9) Create rule in Listener - /chat/* -> chat Target grp
+aws elbv2 create-rule --listener-arn [ListenerARN] --priority [PriorityNo] --conditions Field=[PathPattern/Query],Values=[Path] --actions Type=forward,TargetGroupArn=[TargetGrpARN]
+aws elbv2 create-rule --listener-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:listener/app/alb/0c19faabc600fcb3/e7e5c3a6743bdfda --priority 1 --conditions Field=path-pattern,Values=/chat/* --actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:048386709961:targetgroup/chat/af45c63549d13aa6
+
+Step 10) Create rule in Listener - /search/* -> search Target grp
+aws elbv2 create-rule --listener-arn [ListenerARN] --priority [PriorityNo] --conditions Field=[PathPattern/Query],Values=[Path] --actions Type=forward,TargetGroupArn=[TargetGrpARN]
+aws elbv2 create-rule --listener-arn arn:aws:elasticloadbalancing:us-east-1:048386709961:listener/app/alb/0c19faabc600fcb3/e7e5c3a6743bdfda --priority 2 --conditions Field=path-pattern,Values=/search/* --actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:048386709961:targetgroup/search/fdff75e22785697d
+

@@ -1,0 +1,22 @@
+		       	   ######### Launch Classic Load Balancers #########
+
+Step 1) Launch Instance-1
+aws ec2 run-instances --image-id [AMI_ImageID] --instance-type t2.micro --key-name [KeyName] --security-group-ids [GroupID] --subnet-id [SubnetID] --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="[InstanceName]"}]"
+aws ec2 run-instances --image-id ami-072f5002ae50a228c --instance-type t2.micro --key-name arthos --security-group-ids sg-0331e7b3d81475496 --subnet-id subnet-35ee5314 --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="myos1"}]"  --no-associate-public-ip-address
+
+Step 2) Launch Instance-2
+aws ec2 run-instances --image-id [AMI_ImageID] --instance-type t2.micro --key-name [KeyName] --security-group-ids [GroupID] --subnet-id [SubnetID] --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="[InstanceName]"}]"
+aws ec2 run-instances --image-id ami-072f5002ae50a228c --instance-type t2.micro --key-name arthos --security-group-ids sg-0331e7b3d81475496 --subnet-id subnet-35ee5314 --tag-specifications "ResourceType = instance , Tags = [{Key="Name",Value="myos2"}]"  --no-associate-public-ip-address
+
+## For Classic Load Balancer use elb ##
+Step 3) Create Load Balancer
+aws elb create-load-balancer --load-balancer-name [LoadBalancerName] --listeners "Protocol=HTTP,LoadBalancerPort=[Port-ID],InstanceProtocol=HTTP,InstancePort=80" --subnets [Subnet-ID] --security-groups [SG-Id]
+aws elb create-load-balancer --load-balancer-name clb --listeners "Protocol=HTTP,LoadBalancerPort=8080,InstanceProtocol=HTTP,InstancePort=80" --subnets subnet-35ee5314 --security-groups sg-02ad2a09ccef798c1
+
+Step 4) Configure Load Balancer Health Check
+aws elb configure-health-check --load-balancer-name [LoadBalancerName] --health-check Target=HTTP:80/[Page_Path],Interval=30,UnhealthyThreshold=2,HealthyThreshold=2,Timeout=3
+aws elb configure-health-check --load-balancer-name clb --health-check Target=HTTP:80/index.php,Interval=30,UnhealthyThreshold=2,HealthyThreshold=2,Timeout=3
+ 
+Step 4) Add Instances to load balancer
+aws elb register-instances-with-load-balancer --load-balancer-name [LoadBalancerName] --instances [Instance-ID1] [Instance-ID2]
+aws elb register-instances-with-load-balancer --load-balancer-name clb --instances i-0934b77d7f98455e8 i-0d47df13c0533e580
