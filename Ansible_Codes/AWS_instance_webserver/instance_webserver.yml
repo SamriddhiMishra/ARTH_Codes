@@ -1,0 +1,70 @@
+# Keep the inventory blank, also make sure to keep the .pem key
+# file in same folder as this ansible playbook. Also deny permissions for key using
+# chmod 400 <key_file>.pem
+
+- hosts: localhost
+  vars_prompt:
+  - name: os_name
+    private: no
+    prompt: "Enter the name of EC2 instance - "
+  - name: key_name
+    private: no
+    prompt: "Enter the key-pair name -"
+
+  tasks:
+
+  - name: Install boto library
+    pip:
+      name: "boto3"
+
+  - name: Launch ec2-instance
+    ec2_instance:
+      region: us-east-1
+      image_id: ami-04d29b6f966df1537
+      instance_type: t2.micro
+      vpc_subnet_id: subnet-6884ed66
+      security_group: sg-0331e7b3d81475496
+      key_name: "{{ key_name }}"
+      name: "{{ os_name }}"
+      state: started
+      wait: yes
+      aws_access_key: AK*************YU4
+      aws_secret_key: 26m************************ju5
+    register: info
+
+  - name: Update the inventory with Instance's IP address
+    blockinfile:
+      dest: "/root/ip.txt"
+      block: |
+              [aws_ip]
+              {{ info['instances'][0]['public_ip_address'] }} ansible_user=ec2-user ansible_private_key_file=/root/aws/arthos1.pem ansible_connection=ssh
+
+  - name: Refresh the inventory
+    meta: refresh_inventory
+
+- hosts: aws_ip
+  gather_facts: false
+  become: true
+  become_user: root
+
+  tasks:
+  - name: Install httpd package
+    package:
+      name: "{{ item }}"
+      state: present
+    loop:
+    - "httpd"
+    - "php"
+
+  - name: Copy the php file
+    copy:
+      content: >
+               <pre>
+               <?php
+               print `/usr/sbin/ifconfig`;
+               ?>
+               </pre>
+      dest: "/var/www/html/index.php"
+
+  - name: Start Apache Webserver services
+    command: /usr/sbin/httpd
