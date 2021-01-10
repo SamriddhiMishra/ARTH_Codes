@@ -1,0 +1,19 @@
+########### Create Database ##########
+
+Step 1) Create database Security Group
+aws ec2 create-security-group --group-name [GroupName] --description "Launched from CLI"
+aws ec2 create-security-group --group-name mysg --description "Test"
+
+## Default backup retention time is 1 days
+
+Step 2) Create database
+aws rds create-db-instance --db-instance-identifier [DBI] --db-instance-class [instance_class] --engine [engine] --master-username [username] --master-user-password [password] --allocated-storage [size] vpc-security-group-ids [EC2orVPC_SG_ids] --publicly-accessible --deletion-protection
+aws rds create-db-instance --db-instance-identifier test-mysql-instance1 --db-instance-class db.t2.micro --engine mysql --master-username admin --master-user-password 12345678 --allocated-storage 5 --vpc-security-group-ids sg-0b8ba3e7110741a89 --publicly-accessible --deletion-protection
+
+-----------------------------------------------------------------------------------------
+
+
+########### Create Read Replica ############
+
+aws rds create-db-instance-read-replica --db-instance-identifier test-mysql-instance2 --source-db-instance-identifier test-mysql-instance1
+aws rds create-db-instance-read-replica --db-instance-identifier [instance_name] --source-db-instance-identifier [source_db_inst_name]
