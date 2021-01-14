@@ -1,0 +1,12 @@
+# Launch pod with some label
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "mypod1"
+  labels:
+    app: web
+spec:
+  containers:
+  - name: "myc1"
+    image: "vimal13/apache-webserver-php"
