@@ -1,0 +1,45 @@
+Step 1) Create Security Group for Launch Configuration/Launch Template
+------------------------------------------------------
+aws ec2 create-security-group --group-name [GroupName] --description "Launch Config SG"
+aws ec2 create-security-group --group-name sgLT --description "Launch Config SG"
+
+## Copy the SG ID - sg-0a5b1c214a9f5786c
+
+Step 2) Allow All traffic in inbound rules
+------------------------------------------
+aws ec2 authorize-security-group-ingress --group-name [GroupName] --protocol all --port all --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-name sgLT --protocol all --port all --cidr 0.0.0.0/0
+
+Step 3) Create launch configuration(Can't give tag to the instances)
+-----------------------------------
+aws autoscaling create-launch-configuration --launch-configuration-name [LaunchConfigName] --image-id [ImageID] --instance-type [Type] --key-name [KeyName] --security-groups [SG_ID]
+aws autoscaling create-launch-configuration --launch-configuration-name ec2LT --image-id ami-0898b2b34d7235501 --instance-type t2.micro --key-name arthos --security-groups sg-0a5b1c214a9f5786c
+
+OR
+
+Create Launch Template
+----------------------
+aws ec2 create-launch-template --launch-template-name [TemplateName] --version-description [Version] --launch-template-data "ImageId"="[ImageID]","InstanceType"="[Type]","SecurityGroupIds"=["[SG_ID]"],"TagSpecifications"=[{"ResourceType"="instance","Tags"=[{Key="Name",Value="[Inst_Name]"}]}]
+aws ec2 create-launch-template --launch-template-name ec2LT --version-description v1 --launch-template-data "ImageId"="ami-0898b2b34d7235501","InstanceType"="t2.micro","SecurityGroupIds"=["sg-0a5b1c214a9f5786c"],"TagSpecifications"=[{"ResourceType"="instance","Tags"=[{Key="Name",Value="webos"}]}]
+
+## Attaching Classic Load Balancer
+
+Step 2) Create Auto scaling Group using Launch Configuration
+------------------------------------------------------------
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name [ASG_Name] --launch-configuration-name [LC_Name] --min-size 2 --max-size 10 --desired-capacity 3 --availability-zones [AZ1] [AZ2] --load-balancer-names [LoadBalancerName]
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name myasg --launch-configuration-name ec2LT --min-size 2 --max-size 10 --desired-capacity 3 --availability-zones us-east-1a us-east-1c --load-balancer-names clb
+
+OR
+
+Create Auto scaling Group using Launch Template
+-----------------------------------------------
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name [ASG_Name] --launch-template LaunchTemplateId=[LT_Id]  --min-size 2 --max-size 10 --desired-capacity 3 --availability-zones [AZ1] [AZ2] --load-balancer-names [LoadBalancerName]
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name myasg --launch-template LaunchTemplateId=lt-0c83e1a179f0f7987 --min-size 2 --max-size 10 --desired-capacity 3 --availability-zones us-east-1a us-east-1c --load-balancer-names clb
+
+## Copy Template ID - lt-0c83e1a179f0f7987
+
+Step 5) Adding Scaling policies to the Auto Scaling Group
+---------------------------------------------------------
+aws autoscaling put-scaling-policy --auto-scaling-group-name [ASG_Name] --policy-name [Policy_Name] --policy-type [Policy_Type] --target-tracking-configuration PredefinedMetricSpecification={PredefinedMetricType=ASGAverageNetworkIn},TargetValue=50
+aws autoscaling put-scaling-policy --auto-scaling-group-name myasg --policy-name mysg-track-policy --policy-type TargetTrackingScaling --target-tracking-configuration PredefinedMetricSpecification={PredefinedMetricType=ASGAverageNetworkIn},TargetValue=50
+
