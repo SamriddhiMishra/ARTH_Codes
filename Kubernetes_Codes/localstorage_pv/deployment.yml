@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "mydeploy"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: prod
+  template:
+    metadata:
+      name: "mypod"
+      labels:
+        env: prod
+    spec:
+      volumes:
+      - name: mypod-pvc
+        persistentVolumeClaim:
+          claimName: mypvc
+      containers:
+      - name: "myc"
+        image: "vimal13/apache-webserver-php"
+        volumeMounts:
+        - mountPath: /var/www/html
+          name: mypod-pvc
