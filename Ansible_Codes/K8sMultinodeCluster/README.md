@@ -20,7 +20,7 @@ Installation and Usage
 
 Download and install this collection using following command<br>
 
-`ansible-galaxy collection install samriddhimishra.k8smultinodecluster`
+`$ ansible-galaxy collection install samriddhimishra.k8smultinodecluster`
 
 Example playbook for using kube_master role from this collection
 
